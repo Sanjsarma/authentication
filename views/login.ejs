@@ -27,7 +27,7 @@
               <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-menu" aria-controls="navbars-rs-food" aria-expanded="false" aria-label="Toggle navigation">
               <i class="fa fa-bars"></i>
           </button>
-              <a class="navbar-brand" href="/dashboard"><img src="photos/logo.jpg" class="logo" alt=""></a>
+              <a class="navbar-brand" href="/dashboard"></a>
           </div>
           <!-- End Header Navigation -->
 
@@ -65,13 +65,13 @@
         <%- include ("./errormsg/errors") %>
         <form action="/login" method="POST">
           <div class="form-group">
-            <label for="email">Email</label>
+            <label for="name">User name</label>
             <input
-              type="email"
-              id="email"
-              name="email"
+              type="text"
+              id="name"
+              name="name"
               class="form-control"
-              placeholder="Enter Email"
+              placeholder="Enter user name"
               
             />
           </div>

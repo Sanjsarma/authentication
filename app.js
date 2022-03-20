@@ -37,11 +37,14 @@ app.use(function(req, res, next) {
   app.get('/register',(req,res)=>{
     res.render('register');
   });
+  app.get('/dashboard',(req,res)=>{
+    res.send("Logged in");
+  })
 
   app.post('/register',(req,res)=>{
-    const { name,email,password,password2} = req.body;
+    const { name,password,password2} = req.body;
     let errors=[];
-    if(!name || !email || !password || !password2){
+    if(!name || !password || !password2){
        errors.push({msg: 'Input'});
     }
     if(password!==password2){
@@ -51,17 +54,17 @@ app.use(function(req, res, next) {
       errors.push({ msg: 'Password should have atleast 5 chars' });
     }
     if(errors.length >0){
-      res.render('register',{errors,name,email,password,password2});
+      res.render('register',{errors,name,password,password2});
     }
      else {
-      conn.query('SELECT email FROM user WHERE email ="' + email +'"', function (err, result) {
+      conn.query('SELECT name FROM user WHERE name ="' + name +'"', function (err, result) {
           if (err) throw err;
           console.log(result);    
           if(result.length == 0){ 
               bcrypt.genSalt(10, (err, salt) => { 
               bcrypt.hash(password,salt, function(err, hash) {
-                  var sql = "INSERT INTO user (name,email,password) VALUES (?,?,?)";
-                  var values = [name,email,hash]
+                  var sql = "INSERT INTO user (name,password) VALUES (?,?)";
+                  var values = [name,hash]
                   conn.query(sql,values, function (err, result, fields) {
                   if (err) throw err;
                   req.flash('success_msg','You are now registered. Do login!');
@@ -71,12 +74,11 @@ app.use(function(req, res, next) {
             });
           }
           else{
-              req.flash('error','Email is already registered');
+              req.flash('error','User name is already registered');
              // errors.push({ msg: 'Email is already registered' });
              res.render('register', {
               errors,
               name,
-              email,
               password,
               password2 
             });               
@@ -91,12 +93,12 @@ app.use(function(req, res, next) {
 
       app.get('/logout',
       function(req, res){
-        var sql='SELECT email from user WHERE loggedin="y";';
+        var sql='SELECT name from user WHERE loggedin="y";';
         conn.query(sql,(err,data)=>{
-          var email=data[0].email;
+          var name=data[0].name;
           if(err) throw err;
           else{
-            var sqlu='UPDATE user set loggedin="n" where email="'+email+'"';
+            var sqlu='UPDATE user set loggedin="n" where name="'+name+'"';
             conn.query(sqlu,(err,data)=>{
               if(err) throw err;
             });
@@ -120,25 +122,25 @@ app.use(function(req, res, next) {
       "local-login",
       new Strategy(
         {
-          usernameField: "email",
+          usernameField: "name",
           passwordField: "password",
           passReqToCallback: true
         },
-        function(req, email, password, done) {
-          console.log(email);
+        function(req, name, password, done) {
+          console.log(name);
           console.log(password);
-          conn.query('UPDATE user SET loggedin="y" where email=+"'+email+'"',(err,data)=>{
+          conn.query('UPDATE user SET loggedin="y" where name=+"'+name+'"',(err,data)=>{
             if(err) throw err;
             console.log(data);
           });
-          conn.query('SELECT * FROM user WHERE email ="' + email +'"',function(err, rows) {
+          conn.query('SELECT * FROM user WHERE name ="' + name +'"',function(err, rows) {
             console.log(rows);  
             if (err) return done(err);
               if (!rows.length) {
                 return done(
                   null,
                   false,
-                  {message: "Email id not registered"});
+                  {message: "User name is not registered"});
               }
               console.log(rows[0].password);
               bcrypt.compare(password,rows[0].password,function(err,result){
@@ -149,7 +151,7 @@ app.use(function(req, res, next) {
                   return done(
                     null,
                     false,
-                    { message: 'Incorrect email or password' });
+                    { message: 'Incorrect user name or password' });
                 }
               });
                 
